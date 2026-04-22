@@ -4,7 +4,7 @@ import { userRoutes } from "./routes/userRoutes";
 import { CsvUserRepository } from "./repositories/CsvUserRepository";
 import { UserService } from "./services/UserService";
 
-const PORT = 3000;
+const PORT = 8080;
 
 const repo = new CsvUserRepository();
 const service = new UserService(repo);
