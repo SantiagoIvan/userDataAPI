@@ -1,7 +1,7 @@
 // src/index.ts
 import express from "express";
-import userRoutes from "./routes/user.routes";
-import pingRoutes from "./routes/ping.routes";
+import pingRoutes from "./routes/ping.routes"
+import userRoutes from "./routes/user.routes"
 
 import cors from "cors";
 
