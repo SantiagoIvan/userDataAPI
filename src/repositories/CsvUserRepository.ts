@@ -5,30 +5,46 @@ import fs from "fs/promises";
 import path from "path";
 
 const FILE_PATH = path.resolve(__dirname, "../../data/users.csv");
+const HEADER = "id,name,lastname,email,phone";
 
 export class CsvUserRepository implements IUserRepository {
 
-  private async readFile(): Promise<User[]> {
+  private async ensureFileExists() {
     try {
-      const data = await fs.readFile(FILE_PATH, "utf-8");
-      if (!data) return [];
-
-      return data.split("\n").filter(Boolean).map(line => {
-        const [id, name, lastname, email, phone] = line.split(",");
-        return { id, name, lastname, email, phone };
-      });
-
+      await fs.access(FILE_PATH);
     } catch {
-      return [];
+      // Crear directorio si no existe
+      await fs.mkdir(path.dirname(FILE_PATH), { recursive: true });
+
+      // Crear archivo con header
+      await fs.writeFile(FILE_PATH, HEADER + "\n", "utf-8");
     }
   }
 
-  private async writeFile(users: User[]) {
-    const content = users
-      .map(u => `${u.id},${u.name},${u.lastname},${u.email},${u.phone}`)
-      .join("\n");
+  private async readFile(): Promise<User[]> {
+    await this.ensureFileExists();
 
-    await fs.writeFile(FILE_PATH, content);
+    const data = await fs.readFile(FILE_PATH, "utf-8");
+
+    const lines = data.split("\n").filter(Boolean);
+
+    // Si solo está el header
+    if (lines.length <= 1) return [];
+
+    return lines.slice(1).map(line => {
+      const [id, name, lastname, email, phone] = line.split(",");
+      return { id, name, lastname, email, phone };
+    });
+  }
+
+  private async writeFile(users: User[]) {
+    const content =
+      HEADER + "\n" +
+      users
+        .map(u => `${u.id},${u.name},${u.lastname},${u.email},${u.phone}`)
+        .join("\n");
+
+    await fs.writeFile(FILE_PATH, content, "utf-8");
   }
 
   async getAll(): Promise<User[]> {
